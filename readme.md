@@ -16,7 +16,11 @@ pipx install uv
 `uv pip install -e .`
 
 ## To build the app as executable file
-`pyinstaller <application .spec file>`
+`pyinstaller --clean <application .spec file>`
+
+## Update QML font end
+
+`pyside6-rcc <application .qrc file> -o <application _rc.py file>`
 
 ## Reference
 

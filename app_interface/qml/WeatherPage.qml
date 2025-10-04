@@ -57,7 +57,7 @@ RowLayout {
             TextInput {
                 id: currentLocation
                 text: qsTr("Current Detected IP Location")
-                color: "white"
+                color: "#e8def0"
                 font.bold: true
                 font.family: "../resources/m5x7.ttf"
                 font.pixelSize: 13
@@ -238,6 +238,19 @@ RowLayout {
                         radius: 2
                     }
                 }
+            }
+        }
+
+        Column {
+            spacing: 5
+            Label {
+                text: "Estimation in 6 Months"
+                color: "#e8def0"
+                font.bold: true
+                font.family: "../resources/m5x7.ttf"
+                font.pixelSize: 14
+                antialiasing: false
+                renderType: Text.NativeRendering
             }
         }
 

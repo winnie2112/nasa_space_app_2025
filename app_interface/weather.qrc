@@ -3,6 +3,7 @@
     <file>qtquickcontrols2.conf</file>
     <file>../resources/dreamy_cloud.ico</file>
     <file>../resources/refresh_button.png</file>
+    <file>../resources/pixelate_cloud.png</file>
     <file>../resources/check_weather_button.png</file>
     <file>../resources/back_button.png</file>
     <file>../resources/m5x7.ttf</file>
@@ -17,6 +18,7 @@
     <file>../resources/cinnamoroll/Rainy Night.png</file>
     <file>../resources/cinnamoroll/Sunny.png</file>
     <file>../resources/cinnamoroll/Windy.png</file>
+    <file>weather.qml</file>
     <file>qml/LoadingPage.qml</file>
     <file>qml/WeatherPage.qml</file>
 </qresource>
