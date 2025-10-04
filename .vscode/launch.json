@@ -1,0 +1,13 @@
+{
+    "version": "0.0.0",
+    "configurations": [
+        {
+            "name": "Will It Rain On My Parade?",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/app_interface/weather.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        },
+    ]
+}

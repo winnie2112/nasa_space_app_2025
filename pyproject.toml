@@ -1,0 +1,139 @@
+[project]
+name = "nasa_space_app_2025"
+version = "0.0.0"
+description = "Will It Rain On My Parade?"
+requires-python = "==3.12.0"
+classifiers = [
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.12",
+    "Typing :: Typed",
+    "Private :: Do Not Upload",
+]
+dependencies = [
+    "ipykernel>=6.29.5,<7",
+    "keyring>=23.13.1",
+    "numpy>=1.24.3",
+    "opencv-python>=4.10,<4.11",
+    "PySide6==6.9.2",
+    "gitpython>=3.1.31",
+    "toml>=0.10.2",
+    "pylint>=3.3.2,<4",
+    "black>=25.1.0,<26",
+    "pydocstyle>=6.3.0",
+    "ruff>=0.6.5,<0.7",
+    "mypy==1.13.0",
+    "pyinstaller>=6.15.0,<7",
+    "requests>=2.31.0,<3",
+    "tzlocal==5.3.1",
+    "pytest>=7.1.3",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "pytest-qt>=4.2.0",
+    "pytest-xdist>=3.2.1",
+]
+
+[project.scripts]
+weather-app = "app_interface.weather:main"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    # isort
+    "I",
+    # pydocstyle
+    "D",
+]
+exclude = [
+    "**/*_rc.py",
+    "unit_tests/*",
+    "**/__init__.py",
+    ".venv/*",
+]
+ignore = ["D102", "D103", "D107", "D203", "D213"]
+
+[[tool.uv.index]]
+name = "PyPI"
+url = "https://pypi.org/simple/"
+default = true
+mypy = "^1.18.0"
+
+[tool.uv.sources]
+nasa_space_app_2025 = { path = ".", editable = true }
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "app_interface",
+    "backend",
+]
+
+[tool.hatch.build.targets.wheel]
+include = [
+    "app_interface",
+    "backend",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.mypy]
+python_version = "3.12"
+explicit_package_bases = true
+namespace_packages = true
+warn_unreachable = true
+disallow_untyped_defs = true
+disallow_any_unimported = true
+show_error_codes = true
+strict = true
+exclude = [
+    'app_interface/weather_rc.py',
+]
+
+[[tool.mypy.overrides]]
+module = [
+    'pyside6',
+]
+ignore_missing_imports = true
+disallow_any_unimported = false
+follow_imports = "silent"
+
+[tool.pylint]
+extension-pkg-allow-list = "cv2, PySide6, GitPython"
+disable = [
+    "too-few-public-methods",
+    "no-value-for-parameter",
+    "no-name-in-module",
+    "no-member",
+    "duplicate-code",
+    "fixme",
+]
+
+ignore = ['.venv']
+ignore-paths = [
+    '^app_interface/weather_rc.py',
+]
+recursive = "yes"
+
+[tool.pytest.ini_options]
+testpaths = ["./tests"]
+pythonpath = ["."]
+addopts = ["-n 0", "-v", "-s"]
+qt_api = "pyside6"
+filterwarnings = [
+    "ignore::pytest.PytestDeprecationWarning",
+    "ignore::DeprecationWarning:invoke.loader",
+]
+
+[tool.coverage.run]
+branch = true
+omit = [
+    "*/.venv/*",
+    "*/__init__.py*",
+    'app_interface/weather_rc.py',
+]
+
+[tool.githooks]
+pre-commit = "format-code"

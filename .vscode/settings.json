@@ -1,0 +1,10 @@
+{
+    "python.terminal.activateEnvironment": true,
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+    "qtForPython.qmlls.enabled": false,
+    "python.testing.pytestArgs": [
+        "unit_tests"
+    ],
+}

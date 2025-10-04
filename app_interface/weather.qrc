@@ -1,0 +1,23 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+    <file>qtquickcontrols2.conf</file>
+    <file>../resources/dreamy_cloud.ico</file>
+    <file>../resources/refresh_button.png</file>
+    <file>../resources/check_weather_button.png</file>
+    <file>../resources/back_button.png</file>
+    <file>../resources/m5x7.ttf</file>
+    <file>../resources/cinnamoroll/Cold.png</file>
+    <file>../resources/cinnamoroll/Clear Night.png</file>
+    <file>../resources/cinnamoroll/Cloudy.png</file>
+    <file>../resources/cinnamoroll/Hot.png</file>
+    <file>../resources/cinnamoroll/Hot Night.png</file>
+    <file>../resources/cinnamoroll/Neutral.png</file>
+    <file>../resources/cinnamoroll/No Idea.png</file>
+    <file>../resources/cinnamoroll/Rainy.png</file>
+    <file>../resources/cinnamoroll/Rainy Night.png</file>
+    <file>../resources/cinnamoroll/Sunny.png</file>
+    <file>../resources/cinnamoroll/Windy.png</file>
+    <file>qml/LoadingPage.qml</file>
+    <file>qml/WeatherPage.qml</file>
+</qresource>
+</RCC>
