@@ -22,6 +22,8 @@ pipx install uv
 
 `pyside6-rcc <application .qrc file> -o <application _rc.py file>`
 
+## App Interface
+
 ## Reference
 
 
