@@ -3,7 +3,7 @@
 block_cipher = None
 
 a = Analysis(
-    ['./main.py'],
+    ['./weather.py'],
     pathex=[],
     binaries=[],
     datas=[
@@ -29,7 +29,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='Will it rain?',
+    name='Will It Rain On My Parade?',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

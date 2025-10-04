@@ -15,6 +15,9 @@ pipx install uv
 `uv sync`
 `uv pip install -e .`
 
+## To build the app as executable file
+`pyinstaller <application .spec file>`
+
 ## Reference
 
 
