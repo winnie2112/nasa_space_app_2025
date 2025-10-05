@@ -15,11 +15,17 @@ pipx install uv
 `uv sync`
 `uv pip install -e .`
 
+## To run the app
+Run the app in Run and Debug mode of vscode
+or
+Run directly the weather.py file, located in app_interface
+
+<video controls src="20251005-1626-50.2638308.mp4" title="Title"></video>
+
 ## To build the app as executable file
 `pyinstaller --clean <application .spec file>`
 
 ## Update QML font end
-
 `pyside6-rcc <application .qrc file> -o <application _rc.py file>`
 
 ## App Interface

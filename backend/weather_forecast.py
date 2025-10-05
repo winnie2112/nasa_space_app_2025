@@ -294,6 +294,85 @@ def validate_feelings(
     return emotional_state, emotional_message
 
 
+def validate_est_feelings(
+    current_time: datetime,
+    temperature: int | float,
+    rain: int | float,
+) -> tuple[str, str]:
+    """Cinnamoroll's emotional state based on the estimated weather."""
+
+    emotional_state = ""
+    emotional_message = ""
+
+    hour = current_time.hour
+    is_daytime = 6 <= hour < 18
+
+    # in mm
+    if rain < 1:
+        emotional_state = "No Rain"
+        emotional_message = (
+            "The sky is clear and blue! I am happily relax in the gentle breeze ☁️"
+            if is_daytime
+            else "The stars twinkle above, feeling calm under the peaceful sky 🌙"
+        )
+    elif rain >= 1 and rain < 30:
+        emotional_state = "Rainy"
+        emotional_message = (
+            "Oh no, it will get wet ⛈️🌧️.\n"
+            "Remember to take an umbrella, wear raincoat and your favorite rainny boot!"
+            if is_daytime else
+            "Raindrops are singing lullabies outside ⛈️🌧️…\n"
+            "Perfect time to cuddle and long nap 💤."
+        )
+    else:
+        emotional_state = "Heavy Rain"
+        emotional_message = (
+            "Oh no! It's pouring! I will hide under a big leaf 🌧"
+            if is_daytime
+            else "The storm rumbles outside... feeling sleepy but safe in cozy cloud ☁️💤"
+        )
+
+    # in °C
+    if temperature <= 0:
+        emotional_state = "Very Cold"
+        emotional_message = (
+            "Brrr... it's freezing! My nose is red already... ❄️"
+            if is_daytime
+            else "So cold and sparkly tonight! Sweet dreams of cocoa ☕❄️"
+        )
+    elif temperature > 0 and temperature <= 10:
+        emotional_state = "Cold"
+        emotional_message = (
+            "I feel chilly! Time for warm milk and sunshine snuggles ☕💙"
+            if is_daytime
+            else "Cold night breeze... perfect for curling up under soft clouds 🌙💭"
+        )
+    elif temperature > 10 and temperature <= 20:
+        emotional_state = "Mild"
+        emotional_message = (
+            "What lovely weather! I flutter through the sky feeling light as a feather ☁️✨"
+            if is_daytime
+            else "The evening feels calm and gentle... 🎵💫"
+        )
+    elif temperature > 20 and temperature < 30:
+        emotional_state = "Warm"
+        emotional_message = (
+            "Sunny skies! Time for an ice cream picnic 🍦☀️"
+            if is_daytime
+            else "The warm night air feels cozy... Let's watch the stars with sleepy eyes ✨🌙"
+        )
+    else:
+        emotional_state = "Very Hot"
+        emotional_message = (
+            "Phew! It's super toasty! I'm looking for a shady cloud and a cool drink 🍋☁️"
+            if is_daytime
+            else "Still warm even at night… Cmy ears feel like toasted marshmallows 🔥💤"
+        )
+
+    return emotional_state, emotional_message
+
+
+
 def validate_date_input(
     input_date: str,
     start_date: str,
@@ -341,6 +420,7 @@ class WeatherData:
 
     weather_cache: Dict[str, Any] = None
     est_weather_cache: Dict[str, Any] = None
+    est_expression: str = ""
     cinnamoroll_source: str = ""
     cinnamoroll_message: str = ""
 
@@ -493,6 +573,10 @@ class WeatherData:
         error_msg: Callable[[str], None] | None = None
     ) -> str | None:
         """Calculate the estimated date range (7 days to 6 months from today) based on weather_cache."""
+
+        if not self.est_input_date_check:
+            return None
+
         if self.weather_cache is None:
             if error_msg:
                 error_msg("Failed to fetch weather data.")
@@ -545,13 +629,18 @@ class WeatherData:
                 if error_msg:
                     error_msg("Failed to fetch estimated weather data.")
                 return None
+
+            self.est_expression, self.cinnamoroll_message = validate_est_feelings(
+                self.get_live_local_time(),
+                self.est_weather_cache["Temperature"],
+                self.est_weather_cache["Chance of Rain"]
+            )
+
             self.weather_message = (
-                f"Weather on {day_name}, {self.est_input_date}\n"
+                f"Est. weather on {day_name}, {self.est_input_date}\n"
+                f"{self.est_expression}\n"
                 f"Temperature 🌡️: {self.est_weather_cache['Temperature']} °C\n"
-                f"Min. 🌡️: {self.est_weather_cache['Min Temperature of Day']} °C\n"
-                f"Max. 🌡️: {self.est_weather_cache['Max Temperature of Day']} °C\n"
-                f"Precipitation ☔🌧️: {self.est_weather_cache['Chance of Rain']} %\n"
-                f"Rainfall ⛈️: {self.est_weather_cache['Rainfall']} mm\n"
+                f"Rainfall ⛈️☔🌧️: {self.est_weather_cache['Rainfall']} mm\n"
             )
         else:
             day_name = datetime.strptime(self.selected_date, '%Y-%m-%d').strftime('%A')
@@ -582,30 +671,34 @@ class WeatherData:
             return None
 
         if self.est_input_date_check:
-            temperature = self.est_weather_cache["Temperature"]
-            chance_of_rain = self.est_weather_cache["Chance of Rain"]
-            wind_speed = 0.0 # no data
-            cloud_cover = 0.0 # no data
-            sum_snowfall = 0.0 # no data
-            uv_index = 0.0 # no data
-        else:
-            temperature = self.weather_cache["Temperature"]
-            chance_of_rain = self.weather_cache["Chance of Rain"]
-            wind_speed = self.weather_cache["Wind Speed"]
-            cloud_cover = self.weather_cache["Cloud Cover"]
-            sum_snowfall = self.weather_cache["Sum snowfall"]
-            uv_index = self.weather_cache["UV Index"]
+            if self.est_expression == "No Rain":
+                self.cinnamoroll_source = f"../resources/cinnamoroll/Sunny.png"
+            elif self.est_expression == "Rainy":
+                self.cinnamoroll_source = f"../resources/cinnamoroll/Rainy.png"
+            elif self.est_expression == "Heavy Rain":
+                self.cinnamoroll_source = f"../resources/cinnamoroll/Rainy Night.png"
+            elif self.est_expression == "Very Cold":
+                self.cinnamoroll_source = f"../resources/cinnamoroll/No Idea.png"
+            elif self.est_expression == "Cold":
+                self.cinnamoroll_source = f"../resources/cinnamoroll/Cold.png"
+            elif self.est_expression == "Mild":
+                self.cinnamoroll_source = f"../resources/cinnamoroll/Neutral.png"
+            elif self.est_expression == "Warm":
+                self.cinnamoroll_source = f"../resources/cinnamoroll/Cloudy.png"
+            elif self.est_expression == "Very Hot":
+                self.cinnamoroll_source = f"../resources/cinnamoroll/Hot Night.png"
 
-        expression, self.cinnamoroll_message = validate_feelings(
-            self.get_live_local_time(),
-            temperature,
-            chance_of_rain,
-            wind_speed,
-            cloud_cover,
-            sum_snowfall,
-            uv_index
-        )
-        self.cinnamoroll_source = f"../resources/cinnamoroll/{expression}.png"
+        else:
+            expression, self.cinnamoroll_message = validate_feelings(
+                self.get_live_local_time(),
+                self.weather_cache["Temperature"],
+                self.weather_cache["Chance of Rain"],
+                self.weather_cache["Wind Speed"],
+                self.weather_cache["Cloud Cover"],
+                self.weather_cache["Sum snowfall"],
+                self.weather_cache["UV Index"],
+            )
+            self.cinnamoroll_source = f"../resources/cinnamoroll/{expression}.png"
 
     def validation_and_live_update(
         self,
@@ -621,5 +714,6 @@ class WeatherData:
             self.use_ip_location(error_msg)
 
         self.auto_weather_update(error_msg)
-        self.est_date_range(error_msg)
+        if self.est_input_date_check:
+            self.est_date_range(error_msg)
         self.cinnamoroll_emotions(error_msg)

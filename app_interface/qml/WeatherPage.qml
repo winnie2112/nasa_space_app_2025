@@ -546,9 +546,9 @@ RowLayout {
 
             Rectangle {
                 id: displayWeatherInfos
-                width: 250
+                width: 270
                 height: displayCinnamorollExpression.height
-                x: 430
+                x: 420
                 y: displayCinnamorollExpression.y
                 color: Material.background
                 opacity: 0.8
