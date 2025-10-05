@@ -9,8 +9,6 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
-from utils import get_descriptions
-
 # test variables
 latitude = 52.52
 longitude = 13.41
@@ -77,13 +75,18 @@ def calculate_forecast(latitude, longitude, specified_date):
     rain_model = ExponentialSmoothing(daily_data["rain_sum"], seasonal="add", seasonal_periods=365).fit(0.1, 0.3, 0.3)
     rain_forecast = rain_model.forecast(steps=future_days)
 
-    rain_description, temp_description, _ , _ , _ = get_descriptions(temp_forecast[-1], rain_forecast[-1])
-
-
-    print(f"temp: It's likely to be {temp_description} ({temp_forecast[-1]}), rainfall: It's likely to be {rain_description} ({rain_forecast[-1]})")
     print(f"{[(temp, rain) for (temp, rain) in zip(temp_forecast, rain_forecast)]}")
 
-    return temp_description, rain_description
+    return {
+        "Temperature": temp_forecast[-1],
+        "Rainfall": rain_forecast[-1],
+        "Chance of Rain": min(rain_forecast[-1] * 10, 100),
+        "Max Temperature of Day": temp_forecast[-1],
+        "Min Temperature of Day": temp_forecast[-1],
+        "Wind Speed": -1,
+        "Chance of Rain": -1,
+        "Cloud Cover": 0,
+        "Sum snowfall": 0, # hourly sum of snowfall in centimeters
+        "UV Index": 0,
+    }
 
-
-print(f"temp °C / rain mm: {calculate_forecast(latitude, longitude, specified_date)}")
