@@ -20,9 +20,9 @@ Run the app in Run and Debug mode of vscode
 or
 Run directly the weather.py file, located in app_interface
 
-
-<video controls src="20251005-1626-50.2638308.mp4" title="Title"></video>
-
+## App Preview
+<img src='resources/pictures/app_interface_1.png' width='100%'/>
+<img src='resources/pictures/app_interface_2.png' width='100%'/>
 
 ## To build the app as executable file
 `pyinstaller --clean <application .spec file>`
