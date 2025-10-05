@@ -21,8 +21,8 @@ or
 Run directly the weather.py file, located in app_interface
 
 ## App Preview
-<img src='resources/pictures/app_interface_1.png' width='100%'/>
-<img src='resources/pictures/app_interface_2.png' width='100%'/>
+<img src='resources/app_interface_1.png' width='100%'/>
+<img src='resources/app_interface_2.png' width='100%'/>
 
 ## To build the app as executable file
 `pyinstaller --clean <application .spec file>`
