@@ -372,10 +372,15 @@ class WeatherData:
         current_time = self.get_live_local_time()
         self.timezone_name = str(current_time.tzname())
 
+        if self.est_input_date_check:
+            select_date = self.est_input_date
+        else:
+            select_date = self.selected_date
+
         self.ip_message = (
             f"{get_ip['city']}, {get_ip['country']}\n"
             f"{self.latitude}, {self.longitude}\n"
-            f"{self.selected_date}"
+            f"{select_date}"
         )
 
     def use_user_location(
@@ -405,10 +410,15 @@ class WeatherData:
         else:
             self.timezone_name = ""
 
+        if self.est_input_date_check:
+            select_date = self.est_input_date
+        else:
+            select_date = self.selected_date
+
         self.ip_message = (
             f"{get_city}, {get_country}\n"
             f"{self.latitude}, {self.longitude}\n"
-            f"{self.selected_date}"
+            f"{select_date}"
         )
 
     def get_weather_by_date(
@@ -528,16 +538,15 @@ class WeatherData:
                 error_msg("Failed to fetch weather data.")
             return None
 
-        day_name = datetime.strptime(self.selected_date, '%Y-%m-%d').strftime('%A')
-
         if self.est_input_date_check:
+            day_name = datetime.strptime(self.est_input_date, '%Y-%m-%d').strftime('%A')
             self.est_weather_cache = self.est_weather_data()
             if self.est_weather_cache is None:
                 if error_msg:
                     error_msg("Failed to fetch estimated weather data.")
                 return None
             self.weather_message = (
-                f"Weather on {day_name}, {self.selected_date}\n"
+                f"Weather on {day_name}, {self.est_input_date}\n"
                 f"Temperature 🌡️: {self.est_weather_cache['Temperature']} °C\n"
                 f"Min. 🌡️: {self.est_weather_cache['Min Temperature of Day']} °C\n"
                 f"Max. 🌡️: {self.est_weather_cache['Max Temperature of Day']} °C\n"
@@ -545,6 +554,7 @@ class WeatherData:
                 f"Rainfall ⛈️: {self.est_weather_cache['Rainfall']} mm\n"
             )
         else:
+            day_name = datetime.strptime(self.selected_date, '%Y-%m-%d').strftime('%A')
             self.weather_message = (
                 f"Weather on {day_name}, {self.selected_date}\n"
                 f"Temperature 🌡️: {self.weather_cache['Temperature']} °C\n"

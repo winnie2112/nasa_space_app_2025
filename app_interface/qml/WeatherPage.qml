@@ -56,7 +56,7 @@ RowLayout {
 
             TextInput {
                 id: currentLocation
-                text: qsTr("Current Detected IP Location")
+                text: qsTr("LIVE Detected IP Location")
                 color: "#e8def0"
                 font.bold: true
                 font.family: "../resources/m5x7.ttf"
@@ -317,6 +317,7 @@ RowLayout {
 
         Column {
             spacing: 5
+            visible: !detect6Monthscheck.checked
             Label {
                 text: "Climate Models"
                 color: "#e8def0"
@@ -513,7 +514,7 @@ RowLayout {
                 x: 70
                 y: 135
                 width: 300
-                height: 300
+                height: 320
                 source: weather_components.cinnamoroll_source
                 fillMode: Image.PreserveAspectFit
             }
@@ -546,9 +547,9 @@ RowLayout {
             Rectangle {
                 id: displayWeatherInfos
                 width: 250
-                height: 255
+                height: displayCinnamorollExpression.height
                 x: 430
-                y: 195
+                y: displayCinnamorollExpression.y
                 color: Material.background
                 opacity: 0.8
 
