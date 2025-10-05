@@ -17,6 +17,7 @@ class WeatherBridge(QObject):
     input_location_changed = Signal()
     selected_date_changed = Signal()
     weather_models_changed = Signal()
+    est_input_date_changed = Signal()
 
     cinnamoroll_message_changed = Signal()
     cinnamoroll_source_changed = Signal()
@@ -46,6 +47,17 @@ class WeatherBridge(QObject):
             self.cinnamoroll_message_changed.emit()
         except Exception as e:
             self.emit_error_message(str(e))
+
+    @Property(str, notify=est_input_date_changed)
+    def est_input_date(self) -> str:
+        """Getter."""
+        return self.weather_data.est_input_date
+
+    @est_input_date.setter  # type: ignore
+    def est_input_date(self, value: str) -> None:
+        """Setter."""
+        self.weather_data.est_input_date = value
+        self.est_input_date_changed.emit()
 
     @Property(str, notify=ip_message_changed)
     def ip_message(self) -> str:

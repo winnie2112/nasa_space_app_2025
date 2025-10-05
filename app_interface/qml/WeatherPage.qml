@@ -57,7 +57,7 @@ RowLayout {
             TextInput {
                 id: currentLocation
                 text: qsTr("Current Detected IP Location")
-                color: "white"
+                color: "#e8def0"
                 font.bold: true
                 font.family: "../resources/m5x7.ttf"
                 font.pixelSize: 13
@@ -125,7 +125,7 @@ RowLayout {
         Column {
             spacing: 5
             Label {
-                text: "Select Forecast Time"
+                text: "Forecast weather in next 7 days"
                 color: "#e8def0"
                 font.bold: true
                 font.family: "../resources/m5x7.ttf"
@@ -239,6 +239,69 @@ RowLayout {
                     }
                 }
             }
+        }
+
+        Column {
+            spacing: 5
+            Label {
+                text: "Weather in next 6 Months"
+                color: "#e8def0"
+                font.bold: true
+                font.family: "../resources/m5x7.ttf"
+                font.pixelSize: 14
+                antialiasing: false
+                renderType: Text.NativeRendering
+            }
+
+            TextField {
+                id: estDate6Months
+                placeholderText: "YYYY-MM-DD"
+                color: "white"
+                font.family: "../resources/m5x7.ttf"
+                font.pixelSize: 15
+                antialiasing: false
+                renderType: Text.NativeRendering
+
+                implicitWidth: 200
+
+                background: Rectangle {
+                    width: parent.width
+                    color: "#90BABAEE"
+                }
+
+                validator: RegularExpressionValidator { regularExpression: /^\d{4}-\d{2}-\d{2}$/ }
+                onTextChanged: weather_components.est_input_date = text
+                Component.onCompleted: text = weather_components.est_input_date
+            }
+
+            //SwipeView {
+            //    id: monthView
+            //    width: 200; height: 150
+            //    clip: true
+            //    Repeater {
+            //        model: CalendarModel {
+            //            from: minDate
+            //            to: maxDate
+            //        }
+            //        MonthGrid {
+            //            width: monthView.width
+            //            height: monthView.height
+            //            month: model.month
+            //            year: model.year
+            //            locale: Qt.locale("en_US")
+            //        }
+            //    }
+            //}
+            //Row {
+            //    Button {
+            //        text: "←"
+            //        onClicked: monthView.decrementCurrentIndex()
+            //    }
+            //    Button {
+            //        text: "→"
+            //        onClicked: monthView.incrementCurrentIndex()
+            //    }
+            //}
         }
 
         Column {
@@ -401,7 +464,7 @@ RowLayout {
         Item {
             id: backButton
             Layout.leftMargin: -10
-            Layout.topMargin: 250
+            Layout.topMargin: 180
 
             implicitWidth: 30
             implicitHeight: 20
