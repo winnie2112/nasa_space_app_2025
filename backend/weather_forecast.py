@@ -1,8 +1,9 @@
 """Backend to fetch weather data from API."""
 
-from zoneinfo import ZoneInfo
-from datetime import datetime
 from dataclasses import dataclass
+from zoneinfo import ZoneInfo
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 from typing import Dict, Any, Callable, List, Tuple
 import requests
@@ -291,6 +292,35 @@ def validate_feelings(
     return emotional_state, emotional_message
 
 
+def validate_date_input(
+    input_date: str,
+    start_date: str,
+    end_date: str,
+    error_msg: Callable[[str], None] | None = None
+) -> bool:
+    """Validate user input date is within allowed range."""
+    if not input_date or input_date.strip() == "":
+        if error_msg:
+            error_msg("Date input cannot be empty.")
+        return False
+    try:
+        date = datetime.strptime(input_date, '%Y-%m-%d').date()
+        start = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end = datetime.strptime(end_date, '%Y-%m-%d').date()
+
+        if not (start <= date <= end):
+            if error_msg:
+                error_msg(
+                    f"Date must be between {start_date} and {end_date} for weather estimation in the next 6 months."
+                )
+            return False
+        return True
+    except ValueError:
+        if error_msg:
+            error_msg("Invalid date format. Use YYYY-MM-DD.")
+        return False
+
+
 @dataclass
 class WeatherData:
     ip_message: str = ""
@@ -303,11 +333,20 @@ class WeatherData:
 
     input_location: str = ""
     selected_date: str = ""
+    est_input_date: str = ""
     weather_models: str = "ecmwf_ifs"
 
     weather_cache: Dict[str, Any] = None
     cinnamoroll_source: str = ""
     cinnamoroll_message: str = ""
+
+    def __post_init__(self) -> None:
+        """When first starting the app, the input for est date should be the start limit instead of empty string."""
+        local_today = datetime.now(self.tz).date()
+        start_date = local_today + timedelta(days=7)
+        if not self.est_input_date:
+            # default visible value for QML
+            self.est_input_date = start_date.strftime("%Y-%m-%d")
 
     def use_ip_location(
         self,
@@ -424,6 +463,7 @@ class WeatherData:
         min_temp_of_day = weather["daily"]["temperature_2m_min"][daily_idx]
 
         return {
+            "Today": daily_time[0],
             "Temperature": temperature,
             "Max Temperature of Day": max_temp_of_day,
             "Min Temperature of Day": min_temp_of_day,
@@ -463,22 +503,6 @@ class WeatherData:
     def get_live_local_time(self) -> datetime:
         """Update the live local time of user's location input every 1 second."""
         return datetime.now(self.tz)
-    
-    def validation_and_live_update(
-        self,
-        error_msg: Callable[[str], None] | None = None
-    ) -> None:
-        """Update location + weather depending on input_location."""
-        if self.input_location.strip():
-            if validate_location_input(self.input_location, error_msg):
-                self.use_user_location(error_msg)
-            else:
-                self.use_ip_location(error_msg)
-        else:
-            self.use_ip_location(error_msg)
-
-        self.auto_weather_update(error_msg)
-        self.cinnamoroll_emotions(error_msg)
 
     def cinnamoroll_emotions(
         self,
@@ -500,3 +524,44 @@ class WeatherData:
             self.weather_cache["UV Index"],
         )
         self.cinnamoroll_source = f"../resources/cinnamoroll/{expression}.png"
+
+    def est_date_range(
+        self,
+        error_msg: Callable[[str], None] | None = None
+    ) -> str | None:
+        """Calculate the estimated date range (7 days to 6 months from today) based on weather_cache."""
+        if self.weather_cache is None:
+            if error_msg:
+                error_msg("Failed to fetch weather data.")
+            return None
+        current_today = self.weather_cache["Today"]
+        start_date = datetime.strptime(current_today, "%Y-%m-%d").date() + timedelta(days=7)
+        end_date = start_date + relativedelta(months=+6)
+
+        # Validate format and range
+        valid = validate_date_input(
+            self.est_input_date,
+            start_date.strftime("%Y-%m-%d"),
+            end_date.strftime("%Y-%m-%d"),
+            error_msg
+        )
+        if not valid:
+            return None
+        return self.est_input_date # get the date for est model run
+
+    def validation_and_live_update(
+        self,
+        error_msg: Callable[[str], None] | None = None
+    ) -> None:
+        """Update location + weather depending on input_location."""
+        if self.input_location.strip():
+            if validate_location_input(self.input_location, error_msg):
+                self.use_user_location(error_msg)
+            else:
+                self.use_ip_location(error_msg)
+        else:
+            self.use_ip_location(error_msg)
+
+        self.auto_weather_update(error_msg)
+        self.est_date_range(error_msg)
+        self.cinnamoroll_emotions(error_msg)
