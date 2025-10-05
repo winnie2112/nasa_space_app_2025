@@ -124,8 +124,9 @@ RowLayout {
 
         Column {
             spacing: 5
+            visible: !detect6Monthscheck.checked
             Label {
-                text: "Forecast weather in next 7 days"
+                text: "Forecast in next 7 days"
                 color: "#e8def0"
                 font.bold: true
                 font.family: "../resources/m5x7.ttf"
@@ -243,6 +244,14 @@ RowLayout {
 
         Column {
             spacing: 5
+
+            CheckBox {
+                id: detect6Monthscheck
+                text: "Forecast after 7 days?"
+                Component.onCompleted: checked = weather_components.est_input_date_check
+                onCheckedChanged: weather_components.est_input_date_check = checked
+            }
+
             Label {
                 text: "Weather in next 6 Months"
                 color: "#e8def0"
@@ -251,6 +260,7 @@ RowLayout {
                 font.pixelSize: 14
                 antialiasing: false
                 renderType: Text.NativeRendering
+                visible: detect6Monthscheck.checked
             }
 
             TextField {
@@ -261,6 +271,7 @@ RowLayout {
                 font.pixelSize: 15
                 antialiasing: false
                 renderType: Text.NativeRendering
+                visible: detect6Monthscheck.checked
 
                 implicitWidth: 200
 
@@ -499,10 +510,10 @@ RowLayout {
 
             Image {
                 id: displayCinnamorollExpression
-                x: 80
-                y: -5
-                width: 240
-                height: 240
+                x: 70
+                y: 135
+                width: 300
+                height: 300
                 source: weather_components.cinnamoroll_source
                 fillMode: Image.PreserveAspectFit
             }
@@ -512,7 +523,7 @@ RowLayout {
                 width: parent.width - displayWeatherInfos.width
                 height: 60
                 x: 0
-                y: 190
+                y: 390
                 color: "#dfe9fb"
 
                 Text {
@@ -537,7 +548,7 @@ RowLayout {
                 width: 250
                 height: 255
                 x: 430
-                y: -5
+                y: 195
                 color: Material.background
                 opacity: 0.8
 
