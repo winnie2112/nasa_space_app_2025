@@ -309,14 +309,14 @@ def validate_est_feelings(
 
     # in mm
     if rain < 1:
-        emotional_state = "No Rain"
+        emotional_state_rain = "No Rain"
         emotional_message = (
             "The sky is clear and blue! I am happily relax in the gentle breeze ☁️"
             if is_daytime
             else "The stars twinkle above, feeling calm under the peaceful sky 🌙"
         )
     elif rain >= 1 and rain < 30:
-        emotional_state = "Rainy"
+        emotional_state_rain = "Rainy"
         emotional_message = (
             "Oh no, it will get wet ⛈️🌧️.\n"
             "Remember to take an umbrella, wear raincoat and your favorite rainny boot!"
@@ -325,7 +325,7 @@ def validate_est_feelings(
             "Perfect time to cuddle and long nap 💤."
         )
     else:
-        emotional_state = "Heavy Rain"
+        emotional_state_rain = "Heavy Rain"
         emotional_message = (
             "Oh no! It's pouring! I will hide under a big leaf 🌧"
             if is_daytime
@@ -369,7 +369,7 @@ def validate_est_feelings(
             else "Still warm even at night… Cmy ears feel like toasted marshmallows 🔥💤"
         )
 
-    return emotional_state, emotional_message
+    return emotional_state, emotional_state_rain, emotional_message
 
 
 
@@ -420,7 +420,8 @@ class WeatherData:
 
     weather_cache: Dict[str, Any] = None
     est_weather_cache: Dict[str, Any] = None
-    est_expression: str = ""
+    est_temp_expression: str = ""
+    est_rain_expression: str = ""
     cinnamoroll_source: str = ""
     cinnamoroll_message: str = ""
 
@@ -630,7 +631,7 @@ class WeatherData:
                     error_msg("Failed to fetch estimated weather data.")
                 return None
 
-            self.est_expression, self.cinnamoroll_message = validate_est_feelings(
+            self.est_temp_expression, self.est_rain_expression, self.cinnamoroll_message = validate_est_feelings(
                 self.get_live_local_time(),
                 self.est_weather_cache["Temperature"],
                 self.est_weather_cache["Chance of Rain"]
@@ -638,7 +639,7 @@ class WeatherData:
 
             self.weather_message = (
                 f"Est. weather on {day_name}, {self.est_input_date}\n"
-                f"{self.est_expression}\n"
+                f"{self.est_temp_expression}, {self.est_rain_expression}\n"
                 f"Temperature 🌡️: {self.est_weather_cache['Temperature']} °C\n"
                 f"Rainfall ⛈️☔🌧️: {self.est_weather_cache['Rainfall']} mm\n"
             )
@@ -671,21 +672,16 @@ class WeatherData:
             return None
 
         if self.est_input_date_check:
-            if self.est_expression == "No Rain":
-                self.cinnamoroll_source = f"../resources/cinnamoroll/Sunny.png"
-            elif self.est_expression == "Rainy":
+            # Check temp emotion for now only
+            if self.est_temp_expression == "Very Cold":
                 self.cinnamoroll_source = f"../resources/cinnamoroll/Rainy.png"
-            elif self.est_expression == "Heavy Rain":
-                self.cinnamoroll_source = f"../resources/cinnamoroll/Rainy Night.png"
-            elif self.est_expression == "Very Cold":
-                self.cinnamoroll_source = f"../resources/cinnamoroll/No Idea.png"
-            elif self.est_expression == "Cold":
+            elif self.est_temp_expression == "Cold":
                 self.cinnamoroll_source = f"../resources/cinnamoroll/Cold.png"
-            elif self.est_expression == "Mild":
-                self.cinnamoroll_source = f"../resources/cinnamoroll/Neutral.png"
-            elif self.est_expression == "Warm":
+            elif self.est_temp_expression == "Mild":
                 self.cinnamoroll_source = f"../resources/cinnamoroll/Cloudy.png"
-            elif self.est_expression == "Very Hot":
+            elif self.est_temp_expression == "Warm":
+                self.cinnamoroll_source = f"../resources/cinnamoroll/Sunny.png"
+            elif self.est_temp_expression == "Very Hot":
                 self.cinnamoroll_source = f"../resources/cinnamoroll/Hot Night.png"
 
         else:
