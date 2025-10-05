@@ -8,6 +8,8 @@ from dateutil.relativedelta import relativedelta
 from typing import Dict, Any, Callable, List, Tuple
 import requests
 
+from backend import weather_historic
+
 
 IP_LOCATION_API = "http://ip-api.com/json/"
 WEATHER_API = "https://api.open-meteo.com/v1/forecast"
@@ -334,9 +336,11 @@ class WeatherData:
     input_location: str = ""
     selected_date: str = ""
     est_input_date: str = ""
+    est_input_date_check: bool = False
     weather_models: str = "ecmwf_ifs"
 
     weather_cache: Dict[str, Any] = None
+    est_weather_cache: Dict[str, Any] = None
     cinnamoroll_source: str = ""
     cinnamoroll_message: str = ""
 
@@ -368,10 +372,15 @@ class WeatherData:
         current_time = self.get_live_local_time()
         self.timezone_name = str(current_time.tzname())
 
+        if self.est_input_date_check:
+            select_date = self.est_input_date
+        else:
+            select_date = self.selected_date
+
         self.ip_message = (
             f"{get_ip['city']}, {get_ip['country']}\n"
             f"{self.latitude}, {self.longitude}\n"
-            f"{self.selected_date}"
+            f"{select_date}"
         )
 
     def use_user_location(
@@ -401,10 +410,15 @@ class WeatherData:
         else:
             self.timezone_name = ""
 
+        if self.est_input_date_check:
+            select_date = self.est_input_date
+        else:
+            select_date = self.selected_date
+
         self.ip_message = (
             f"{get_city}, {get_country}\n"
             f"{self.latitude}, {self.longitude}\n"
-            f"{self.selected_date}"
+            f"{select_date}"
         )
 
     def get_weather_by_date(
@@ -474,57 +488,6 @@ class WeatherData:
             "UV Index": uv_index,
         }
 
-    def auto_weather_update(
-        self,
-        error_msg: Callable[[str], None] | None = None,
-    ) -> Dict[str, int | float] | None:
-        """Update the weather data automatically."""
-        self.weather_cache = self.live_weather_data(error_msg)
-
-        if self.weather_cache is None:
-            if error_msg:
-                error_msg("Failed to fetch weather data.")
-            return None
-        
-        day_name = datetime.strptime(self.selected_date, '%Y-%m-%d').strftime('%A')
-
-        self.weather_message = (
-            f"Weather on {day_name}, {self.selected_date}\n"
-            f"Temperature 🌡️: {self.weather_cache['Temperature']} °C\n"
-            f"Min. 🌡️: {self.weather_cache['Min Temperature of Day']} °C\n"
-            f"Max. 🌡️: {self.weather_cache['Max Temperature of Day']} °C\n"
-            f"Cloud ☁️: {self.weather_cache['Cloud Cover']} %\n"
-            f"Precipitation ☔🌧️: {self.weather_cache['Chance of Rain']} %\n"
-            f"Wind speed 🍃: {self.weather_cache['Wind Speed']} km/h\n"
-            f"Snowfall ☃️❄️: {self.weather_cache['Sum snowfall']} cm\n"
-            f"UV Index 🔆: {self.weather_cache['UV Index']}"
-        )
-
-    def get_live_local_time(self) -> datetime:
-        """Update the live local time of user's location input every 1 second."""
-        return datetime.now(self.tz)
-
-    def cinnamoroll_emotions(
-        self,
-        error_msg: Callable[[str], None] | None = None
-    ) -> None:
-        """Return cinnamoroll expressions based on weather."""
-        if self.weather_cache is None:
-            if error_msg:
-                error_msg("Failed to fetch weather data.")
-            return None
-
-        expression, self.cinnamoroll_message = validate_feelings(
-            self.get_live_local_time(),
-            self.weather_cache["Temperature"],
-            self.weather_cache["Chance of Rain"],
-            self.weather_cache["Wind Speed"],
-            self.weather_cache["Cloud Cover"],
-            self.weather_cache["Sum snowfall"],
-            self.weather_cache["UV Index"],
-        )
-        self.cinnamoroll_source = f"../resources/cinnamoroll/{expression}.png"
-
     def est_date_range(
         self,
         error_msg: Callable[[str], None] | None = None
@@ -548,6 +511,101 @@ class WeatherData:
         if not valid:
             return None
         return self.est_input_date # get the date for est model run
+
+    def est_weather_data(
+        self,
+    ) -> Dict[str, Any] | None:
+        """Estimate weather from another model after 7 days, instead of using open-meteo like live_weather_data."""
+        if self.est_input_date is None:
+            return None
+
+        return weather_historic.calculate_forecast(
+            self.latitude,
+            self.longitude,
+            datetime.strptime(self.est_input_date, '%Y-%m-%d').date()
+        )
+
+    def auto_weather_update(
+        self,
+        error_msg: Callable[[str], None] | None = None,
+    ) -> Dict[str, int | float] | None:
+        """Update the weather data automatically."""
+        self.weather_cache = self.live_weather_data(error_msg)
+        # We need this weather_cache to get the "Today" date for est_date_range
+        # some places have timezone into the future ;), which is why "Today" is needed
+        if self.weather_cache is None:
+            if error_msg:
+                error_msg("Failed to fetch weather data.")
+            return None
+
+        if self.est_input_date_check:
+            day_name = datetime.strptime(self.est_input_date, '%Y-%m-%d').strftime('%A')
+            self.est_weather_cache = self.est_weather_data()
+            if self.est_weather_cache is None:
+                if error_msg:
+                    error_msg("Failed to fetch estimated weather data.")
+                return None
+            self.weather_message = (
+                f"Weather on {day_name}, {self.est_input_date}\n"
+                f"Temperature 🌡️: {self.est_weather_cache['Temperature']} °C\n"
+                f"Min. 🌡️: {self.est_weather_cache['Min Temperature of Day']} °C\n"
+                f"Max. 🌡️: {self.est_weather_cache['Max Temperature of Day']} °C\n"
+                f"Precipitation ☔🌧️: {self.est_weather_cache['Chance of Rain']} %\n"
+                f"Rainfall ⛈️: {self.est_weather_cache['Rainfall']} mm\n"
+            )
+        else:
+            day_name = datetime.strptime(self.selected_date, '%Y-%m-%d').strftime('%A')
+            self.weather_message = (
+                f"Weather on {day_name}, {self.selected_date}\n"
+                f"Temperature 🌡️: {self.weather_cache['Temperature']} °C\n"
+                f"Min. 🌡️: {self.weather_cache['Min Temperature of Day']} °C\n"
+                f"Max. 🌡️: {self.weather_cache['Max Temperature of Day']} °C\n"
+                f"Cloud ☁️: {self.weather_cache['Cloud Cover']} %\n"
+                f"Precipitation ☔🌧️: {self.weather_cache['Chance of Rain']} %\n"
+                f"Wind speed 🍃: {self.weather_cache['Wind Speed']} km/h\n"
+                f"Snowfall ☃️❄️: {self.weather_cache['Sum snowfall']} cm\n"
+                f"UV Index 🔆: {self.weather_cache['UV Index']}"
+            )
+
+    def get_live_local_time(self) -> datetime:
+        """Update the live local time of user's location input every 1 second."""
+        return datetime.now(self.tz)
+
+    def cinnamoroll_emotions(
+        self,
+        error_msg: Callable[[str], None] | None = None
+    ) -> None:
+        """Return cinnamoroll expressions based on weather."""
+        if self.weather_cache is None:
+            if error_msg:
+                error_msg("Failed to fetch weather data.")
+            return None
+
+        if self.est_input_date_check:
+            temperature = self.est_weather_cache["Temperature"]
+            chance_of_rain = self.est_weather_cache["Chance of Rain"]
+            wind_speed = 0.0 # no data
+            cloud_cover = 0.0 # no data
+            sum_snowfall = 0.0 # no data
+            uv_index = 0.0 # no data
+        else:
+            temperature = self.weather_cache["Temperature"]
+            chance_of_rain = self.weather_cache["Chance of Rain"]
+            wind_speed = self.weather_cache["Wind Speed"]
+            cloud_cover = self.weather_cache["Cloud Cover"]
+            sum_snowfall = self.weather_cache["Sum snowfall"]
+            uv_index = self.weather_cache["UV Index"]
+
+        expression, self.cinnamoroll_message = validate_feelings(
+            self.get_live_local_time(),
+            temperature,
+            chance_of_rain,
+            wind_speed,
+            cloud_cover,
+            sum_snowfall,
+            uv_index
+        )
+        self.cinnamoroll_source = f"../resources/cinnamoroll/{expression}.png"
 
     def validation_and_live_update(
         self,

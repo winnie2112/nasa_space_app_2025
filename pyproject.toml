@@ -2,7 +2,7 @@
 name = "nasa_space_app_2025"
 version = "0.0.0"
 description = "Will It Rain On My Parade?"
-requires-python = "==3.12.0"
+requires-python = "==3.12.1"
 classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
@@ -31,6 +31,11 @@ dependencies = [
     "pytest-mock>=3.10.0",
     "pytest-qt>=4.2.0",
     "pytest-xdist>=3.2.1",
+    "openmeteo-requests>=1.7.3",
+    "pandas>=2.3.3",
+    "requests-cache>=1.2.1",
+    "retry-requests>=2.0.0",
+    "statsmodels>=0.14.5",
 ]
 
 [project.scripts]

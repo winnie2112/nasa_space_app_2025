@@ -1,6 +1,5 @@
 """Bridge file to connect backend and qml."""
 
-from datetime import datetime
 from typing import List
 
 from PySide6.QtCore import Property, QObject, Signal, Slot
@@ -18,6 +17,7 @@ class WeatherBridge(QObject):
     selected_date_changed = Signal()
     weather_models_changed = Signal()
     est_input_date_changed = Signal()
+    est_input_date_check_changed = Signal()
 
     cinnamoroll_message_changed = Signal()
     cinnamoroll_source_changed = Signal()
@@ -47,17 +47,6 @@ class WeatherBridge(QObject):
             self.cinnamoroll_message_changed.emit()
         except Exception as e:
             self.emit_error_message(str(e))
-
-    @Property(str, notify=est_input_date_changed)
-    def est_input_date(self) -> str:
-        """Getter."""
-        return self.weather_data.est_input_date
-
-    @est_input_date.setter  # type: ignore
-    def est_input_date(self, value: str) -> None:
-        """Setter."""
-        self.weather_data.est_input_date = value
-        self.est_input_date_changed.emit()
 
     @Property(str, notify=ip_message_changed)
     def ip_message(self) -> str:
@@ -132,6 +121,28 @@ class WeatherBridge(QObject):
         if returned_weather:
             self._daily_dates = returned_weather[1]
         return self._daily_dates
+
+    @Property(bool, notify=est_input_date_check_changed)
+    def est_input_date_check(self) -> bool:
+        """Getter."""
+        return bool(self.weather_data.est_input_date_check)
+
+    @est_input_date_check.setter  # type: ignore
+    def est_input_date_check(self, value: bool) -> None:
+        """Setter."""
+        self.weather_data.est_input_date_check = value
+        self.est_input_date_check_changed.emit()
+
+    @Property(str, notify=est_input_date_changed)
+    def est_input_date(self) -> str:
+        """Getter."""
+        return self.weather_data.est_input_date
+
+    @est_input_date.setter  # type: ignore
+    def est_input_date(self, value: str) -> None:
+        """Setter."""
+        self.weather_data.est_input_date = value
+        self.est_input_date_changed.emit()
 
     @Property(str, notify=weather_models_changed)
     def weather_models(self) -> str:
